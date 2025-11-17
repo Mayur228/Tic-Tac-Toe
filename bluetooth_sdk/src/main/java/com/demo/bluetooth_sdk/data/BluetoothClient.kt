@@ -11,6 +11,7 @@ import java.io.IOException
 import java.util.UUID
 
 class BluetoothClient(
+    private val context: android.content.Context,
     private val adapter: BluetoothAdapter?,
     private val incomingMoves: MutableSharedFlow<Int>,
     private val sharedSocketRef: () -> BluetoothSocket?,
