@@ -1,9 +1,11 @@
 package com.demo.bluetooth_sdk.data.repository
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import androidx.annotation.RequiresPermission
 import com.demo.bluetooth_sdk.data.BluetoothClient
 import com.demo.bluetooth_sdk.data.BluetoothScanner
 import com.demo.bluetooth_sdk.data.BluetoothServer
@@ -50,6 +52,21 @@ class BluetoothRepositoryImpl(
             }
         )
     }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override suspend fun hostGame(hostName: String): String? {
+        try {
+            adapter?.name = hostName
+        } catch (_: Exception) {}
+
+        // start server and wait for player
+        return try {
+            server.waitForPlayer()
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
 
     override fun startScan() = BluetoothScanner(context, adapter).startScan()
 

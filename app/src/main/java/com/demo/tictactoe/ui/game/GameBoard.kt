@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.demo.bluetooth_sdk.sdk.ConnectionState
 import com.demo.tictactoe.ui.game.component.WinDialog
 import com.demo.tictactoe.ui.game.component.WinLineOverlay
-import com.demo.tictactoe.ui.gamehost.ConnectionState
 import com.demo.tictactoe.ui.gamehost.GameViewModel
 
 @Composable
@@ -72,7 +72,7 @@ fun GameBoardScreen(viewModel: GameViewModel) {
                                     .background(cellColor, RoundedCornerShape(16.dp))
                                     .border(2.dp, borderColor, RoundedCornerShape(16.dp))
                                     .clickable(
-                                        enabled = state.connectionState == ConnectionState.Connected &&
+                                        enabled = state.connectionState is ConnectionState.Connected &&
                                                 !state.gameOver &&
                                                 state.isMyTurn &&
                                                 value.isEmpty(),

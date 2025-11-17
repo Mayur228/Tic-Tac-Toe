@@ -1,14 +1,16 @@
 package com.demo.tictactoe.ui.gamehost
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.demo.bluetooth_sdk.sdk.ConnectionState
 import com.demo.bluetooth_sdk.sdk.GameBluetoothSdk
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,153 +20,90 @@ class GameViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GameState())
-    val state = _state.asStateFlow()
+    val state: StateFlow<GameState> = _state.asStateFlow()
 
     init {
-        // register a client-connected callback from SDK (if SDK exposes it)
-        try {
-            sdk.setOnClientConnected {
-                _state.update {
-                    it.copy(connectionState = ConnectionState.Connected, statusText = "Connected")
+        // Observe SDK connection state
+        viewModelScope.launch {
+            sdk.connectionState.collect { connection ->
+                when (connection) {
+                    ConnectionState.Default -> updateStatus("Default", ConnectionState.Default)
+                    ConnectionState.Scanning -> updateStatus("Scanning...", ConnectionState.Scanning)
+                    ConnectionState.Waiting -> updateStatus("Waiting for player...", ConnectionState.Waiting)
+                    ConnectionState.Connecting -> updateStatus("Connecting...", ConnectionState.Connecting)
+                    is ConnectionState.Connected -> updateStatus("Connected with ${connection.deviceName}", connection)
+                    ConnectionState.Failed -> updateStatus("Connection failed", ConnectionState.Failed)
                 }
             }
-        } catch (_: Throwable) {
-            // ignore if SDK does not support callback
         }
 
+        // Observe moves
         viewModelScope.launch {
-            sdk.incomingMoves.collect { move ->
-                // special reset code
-                if (move == RESET_CODE) {
-                    resetGame(receivedFromOpponent = true)
-                    return@collect
-                }
+            sdk.moveFlow.collect { move ->
+                if (move == RESET_CODE) resetGame(receivedFromOpponent = true)
+                else applyOpponentMove(move)
+            }
+        }
 
-                // When first move arrives -> mark connected
-                if (_state.value.connectionState != ConnectionState.Connected) {
-                    _state.update { s -> s.copy(connectionState = ConnectionState.Connected, statusText = "Connected") }
-                }
+        // Observe reset flow
+        viewModelScope.launch {
+            sdk.resetFlow.collect { resetGame(receivedFromOpponent = true) }
+        }
 
-                applyOpponentMove(move)
+        // Observe discovered host names
+        viewModelScope.launch {
+            sdk.discoveredHosts.collect { hosts ->
+                _state.update { it.copy(discoveredDevices = hosts) }
             }
         }
     }
 
     companion object {
-        // reserved code for reset sync
         private const val RESET_CODE = 99
-        // host advertised name prefix
-        const val HOST_NAME_PREFIX = "Tic Tac Toe Host"
     }
 
-    // ----------------------------------------------------------------
-    // HOST
-    // ----------------------------------------------------------------
+    // ------------------------ HOST GAME ------------------------
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun hostGame() {
-        // set adapter name (best-effort, may require BLUETOOTH_ADMIN on older devices)
-        try {
-            val adapter = BluetoothAdapter.getDefaultAdapter()
-            adapter?.name = HOST_NAME_PREFIX
-        } catch (_: Exception) {}
-
-        _state.update {
-            it.copy(
-                myMark = "X",
-                isMyTurn = true,
-                statusText = "Host is Waiting for player",
-                connectionState = ConnectionState.Advertising
-            )
-        }
-
-        viewModelScope.launch {
-            // waitForPlayer returns remote name or null
-            val name = try {
-                sdk.waitForPlayer()
-            } catch (t: Throwable) {
-                null
-            }
-
-            if (name != null) {
-                _state.update {
-                    it.copy(connectionState = ConnectionState.Connected, statusText = "Connected with $name")
-                }
-            } else {
-                _state.update { it.copy(connectionState = ConnectionState.Failed, statusText = "Failed to accept player") }
-            }
-        }
+    fun hostGame(hostName: String) {
+        sdk.hostGame(hostName)
     }
 
-    // ----------------------------------------------------------------
-    // JOIN GAME (scan)
-    // ----------------------------------------------------------------
-    fun joinGame() {
-        _state.update {
-            it.copy(
-                myMark = "O",
-                isMyTurn = false,
-                statusText = "Scanning…",
-                connectionState = ConnectionState.Scanning,
-                discoveredDevices = emptyList()
-            )
-        }
-
-        viewModelScope.launch {
-            sdk.scan().collectLatest { device ->
-                _state.update { s ->
-                    // show only advertised host devices (filter by name)
-                    val deviceName = device.name ?: ""
-                    if (!deviceName.contains(HOST_NAME_PREFIX, ignoreCase = true)) {
-                        s // ignore non-host devices
-                    } else {
-                        if (s.discoveredDevices.none { it.address == device.address }) {
-                            s.copy(discoveredDevices = s.discoveredDevices + device)
-                        } else s
-                    }
-                }
-            }
-        }
+    // ------------------------ JOIN / SCAN ------------------------
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun startScan() {
+        sdk.startScanForHosts()
     }
 
-    // ----------------------------------------------------------------
-    // CONNECT
-    // ----------------------------------------------------------------
-    fun connect(device: BluetoothDevice) {
-        _state.update { it.copy(connectionState = ConnectionState.Connecting, statusText = "Connecting...") }
-
-        viewModelScope.launch {
-            val success = try {
-                sdk.connect(device)
-            } catch (t: Throwable) {
-                false
-            }
-
-            if (success) {
-                _state.update { it.copy(connectionState = ConnectionState.Connected, statusText = "Connected!") }
-            } else {
-                _state.update { it.copy(connectionState = ConnectionState.Failed, statusText = "Connection failed") }
-            }
-        }
+    fun joinGame(hostName: String) {
+        sdk.joinGame(hostName)
     }
 
-    // ----------------------------------------------------------------
-    // MAKE MOVE
-    // ----------------------------------------------------------------
+    // ------------------------ MAKE MOVE ------------------------
     fun makeMove(pos: Int) {
         val s = _state.value
-        if (s.gameOver || !s.isMyTurn || s.board[pos].isNotEmpty() || s.connectionState != ConnectionState.Connected) return
+        if (s.gameOver || !s.isMyTurn || s.board[pos].isNotEmpty() || s.connectionState !is ConnectionState.Connected) return
 
-        viewModelScope.launch {
-            try {
-                sdk.sendMove(pos)
-            } catch (_: Throwable) {}
-            applyLocalMove(pos)
+        sdk.makeMove(pos)
+        applyLocalMove(pos)
+    }
+
+    // ------------------------ RESET ------------------------
+    fun resetGame(receivedFromOpponent: Boolean = false) {
+        if (!receivedFromOpponent) sdk.resetGame()
+
+        _state.update { st ->
+            st.copy(
+                board = List(9) { "" },
+                gameOver = false,
+                winner = null,
+                winningLine = null,
+                isMyTurn = st.myMark == "X",
+                statusText = if (st.myMark == "X") "Your turn" else "Opponent's turn"
+            )
         }
     }
 
-    // ----------------------------------------------------------------
-    // LOCAL MOVE
-    // ----------------------------------------------------------------
+    // ------------------------ LOCAL MOVE ------------------------
     private fun applyLocalMove(pos: Int) {
         val st = _state.value
         val board = st.board.toMutableList()
@@ -180,17 +119,13 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    // ----------------------------------------------------------------
-    // OPPONENT MOVE
-    // ----------------------------------------------------------------
+    // ------------------------ OPPONENT MOVE ------------------------
     private fun applyOpponentMove(pos: Int) {
         val st = _state.value
         val enemy = if (st.myMark == "X") "O" else "X"
 
         val board = st.board.toMutableList()
-        // guard
         if (pos < 0 || pos >= board.size) return
-
         board[pos] = enemy
 
         val win = checkWinner(board)
@@ -203,51 +138,32 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    // ----------------------------------------------------------------
-    // SYNC RESET
-    // ----------------------------------------------------------------
-    fun resetGame(receivedFromOpponent: Boolean = false) {
-        val mark = state.value.myMark
-
-        if (!receivedFromOpponent) {
-            // send reset signal to opponent
-            viewModelScope.launch {
-                try {
-                    sdk.sendMove(RESET_CODE)
-                } catch (_: Throwable) {}
-            }
-        }
-
-        _state.update {
-            it.copy(
-                board = List(9) { "" },
-                gameOver = false,
-                winner = null,
-                winningLine = null,
-                isMyTurn = mark == "X",
-                statusText = if (mark == "X") "Your turn" else "Opponent's turn"
-            )
-        }
-    }
-
-    // ----------------------------------------------------------------
-    // GAME END
-    // ----------------------------------------------------------------
+    // ------------------------ END / DRAW ------------------------
     private fun endGame(board: List<String>, winner: String, line: List<Int>) {
         _state.update {
-            it.copy(board = board, gameOver = true, winner = winner, winningLine = line, statusText = if (winner == it.myMark) "🎉 You Win!" else "😢 Opponent Wins!")
+            it.copy(
+                board = board,
+                gameOver = true,
+                winner = winner,
+                winningLine = line,
+                statusText = if (winner == it.myMark) "🎉 You Win!" else "😢 Opponent Wins!"
+            )
         }
     }
 
     private fun drawGame(board: List<String>) {
         _state.update {
-            it.copy(board = board, gameOver = true, winner = null, winningLine = null, statusText = "🤝 Draw!")
+            it.copy(
+                board = board,
+                gameOver = true,
+                winner = null,
+                winningLine = null,
+                statusText = "🤝 Draw!"
+            )
         }
     }
 
-    // ----------------------------------------------------------------
-    // WIN CHECKER
-    // ----------------------------------------------------------------
+    // ------------------------ WIN CHECKER ------------------------
     private fun checkWinner(board: List<String>): List<Int>? {
         val wins = listOf(
             listOf(0,1,2),
@@ -259,7 +175,6 @@ class GameViewModel @Inject constructor(
             listOf(0,4,8),
             listOf(2,4,6)
         )
-
         for (line in wins) {
             val (a,b,c) = line
             if (board[a].isNotEmpty() && board[a] == board[b] && board[b] == board[c]) return line
@@ -268,4 +183,15 @@ class GameViewModel @Inject constructor(
     }
 
     private fun isDraw(board: List<String>): Boolean = board.all { it.isNotEmpty() } && checkWinner(board) == null
+
+    // ------------------------ STATUS UPDATE ------------------------
+    private fun updateStatus(text: String, connection: ConnectionState) {
+        _state.update { it.copy(statusText = text, connectionState = connection) }
+    }
+
+    // ------------------------ CLEANUP ------------------------
+    override fun onCleared() {
+        super.onCleared()
+        sdk.clear() // cancels all SDK coroutines
+    }
 }

@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.demo.tictactoe.common.BlePermissionHelper
 
-@SuppressLint("ContextCastToActivity")
+@SuppressLint("MissingPermission", "ContextCastToActivity")
 @Composable
 fun HostJoinScreen(
     viewModel: GameViewModel,
@@ -95,7 +95,7 @@ fun HostJoinScreen(
                 }
                 activity.startActivity(discoverIntent)
 
-                viewModel.hostGame()
+                viewModel.hostGame("Tic Tac Toe Host")
                 onHost()
             }
 
@@ -110,7 +110,7 @@ fun HostJoinScreen(
             color = Color(0xFFFF61C6)
         ) {
             pendingAction = {
-                viewModel.joinGame()
+                viewModel.startScan()
                 onJoin()
             }
 

@@ -1,11 +1,11 @@
 package com.demo.tictactoe.ui.gamehost
 
 import com.demo.bluetooth_sdk.BluetoothCore
-import com.demo.bluetooth_sdk.domain.usecase.ConnectUseCase
+import com.demo.bluetooth_sdk.domain.usecase.HostGameUseCase
+import com.demo.bluetooth_sdk.domain.usecase.JoinGameUseCase
 import com.demo.bluetooth_sdk.domain.usecase.ObserveMovesUseCase
 import com.demo.bluetooth_sdk.domain.usecase.SendMoveUseCase
 import com.demo.bluetooth_sdk.domain.usecase.StartScanUseCase
-import com.demo.bluetooth_sdk.domain.usecase.StartServerUseCase
 import com.demo.bluetooth_sdk.sdk.GameBluetoothSdk
 import dagger.Module
 import dagger.Provides
@@ -23,18 +23,18 @@ class GameViewModelModule {
     }
 
     @Provides
-    fun provideStartServerUseCase(): StartServerUseCase {
-        return BluetoothCore.Bluetooth.startServerUseCase
-    }
-
-    @Provides
-    fun provideConnectUseCase(): ConnectUseCase {
-        return BluetoothCore.Bluetooth.connectUseCase
-    }
-
-    @Provides
     fun provideSendMoveUseCase(): SendMoveUseCase {
         return BluetoothCore.Bluetooth.sendMoveUseCase
+    }
+
+    @Provides
+    fun provideHostGameUseCase(): HostGameUseCase {
+        return BluetoothCore.Bluetooth.hostGameUseCase
+    }
+
+    @Provides
+    fun provideJoinGameUseCase(): JoinGameUseCase {
+        return BluetoothCore.Bluetooth.joinGameUseCase
     }
 
     @Provides
@@ -45,9 +45,9 @@ class GameViewModelModule {
     @Provides
     fun provideSdk(): GameBluetoothSdk {
         return GameBluetoothSdk(
+            hostGameUseCase = provideHostGameUseCase(),
+            joinGameUseCase = provideJoinGameUseCase(),
             startScanUseCase = provideStartScanUseCase(),
-            startServerUseCase = provideStartServerUseCase(),
-            connectUseCase = provideConnectUseCase(),
             sendMoveUseCase = provideSendMoveUseCase(),
             observeMovesUseCase = provideObserveMovesUseCase()
         )

@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.demo.bluetooth_sdk.di.BluetoothModule
 import com.demo.bluetooth_sdk.domain.usecase.ConnectUseCase
+import com.demo.bluetooth_sdk.domain.usecase.HostGameUseCase
+import com.demo.bluetooth_sdk.domain.usecase.JoinGameUseCase
 import com.demo.bluetooth_sdk.domain.usecase.ObserveMovesUseCase
 import com.demo.bluetooth_sdk.domain.usecase.SendMoveUseCase
 import com.demo.bluetooth_sdk.domain.usecase.StartScanUseCase
@@ -42,13 +44,13 @@ object BluetoothCore {
     }
 
     object Bluetooth {
-        val connectUseCase: ConnectUseCase
+        val hostGameUseCase: HostGameUseCase
+            get() = get().get()
+
+        val joinGameUseCase: JoinGameUseCase
             get() = get().get()
 
         val startScanUseCase: StartScanUseCase
-            get() = get().get()
-
-        val startServerUseCase: StartServerUseCase
             get() = get().get()
 
         val sendMoveUseCase: SendMoveUseCase

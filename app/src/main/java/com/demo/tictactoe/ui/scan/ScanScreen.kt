@@ -1,6 +1,7 @@
 package com.demo.tictactoe.ui.scan
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -102,11 +103,12 @@ fun ScanScreen(
         ) {
             items(state.discoveredDevices) { device ->
 
+                Log.e("CHECK",device)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            viewModel.connect(device)
+                            viewModel.joinGame(device)
                             onConnected()
                         },
                     shape = RoundedCornerShape(18.dp),
@@ -119,7 +121,7 @@ fun ScanScreen(
                         modifier = Modifier.padding(18.dp)
                     ) {
                         Text(
-                            text = device.name ?: "Unknown Device",
+                            text = device ?: "Unknown Device",
                             color = Color(0xFF4C9EFF),
                             fontSize = 18.sp
                         )
@@ -127,7 +129,7 @@ fun ScanScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = device.address,
+                            text = device,
                             color = Color(0xFF7C90AE),
                             fontSize = 14.sp
                         )
