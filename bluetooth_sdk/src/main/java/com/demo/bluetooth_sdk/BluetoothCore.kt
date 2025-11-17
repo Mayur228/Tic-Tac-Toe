@@ -1,6 +1,5 @@
 package com.demo.bluetooth_sdk
 
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.demo.bluetooth_sdk.di.BluetoothModule
