@@ -8,7 +8,6 @@ import androidx.navigation.compose.composable
 import com.demo.tictactoe.ui.game.GameBoardScreen
 import com.demo.tictactoe.ui.gamehost.GameViewModel
 import com.demo.tictactoe.ui.gamehost.HostJoinScreen
-import com.demo.tictactoe.ui.permission.PermissionScreen
 import com.demo.tictactoe.ui.scan.ScanScreen
 import com.demo.tictactoe.ui.waiting.WaitingScreen
 
