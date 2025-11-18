@@ -1,7 +1,11 @@
 package com.demo.tictactoe.di
 
-import android.bluetooth.BluetoothManager
 import android.content.Context
+import com.demo.bluetooth_sdk.BluetoothClassicSdk
+import com.demo.bluetooth_sdk.sdk.ClassicBluetoothManager
+import com.demo.tictactoe.core.common.network.BluetoothApi
+import com.demo.tictactoe.framework.BluetoothApiImpl
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,13 +15,15 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+abstract class AppModule {
+    companion object  {
+//        @Provides
+//        @Singleton
+//        fun provideBluetoothApi(): ClassicBluetoothManager {
+//            return BluetoothClassicSdk.Manager.bluetoothSdkManager
+//        }
+    }
 
-//    @Provides
-//    @Singleton
-//    fun provideBluetoothManager(
-//        @ApplicationContext context: Context
-//    ): BluetoothManager {
-//        return context.getSystemService(BluetoothManager::class.java)
-//    }
+    @Binds
+    abstract fun bindBluetoothApiProvider(impl: BluetoothApiImpl): BluetoothApi
 }

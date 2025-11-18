@@ -24,7 +24,7 @@ class BluetoothScanner(
     }
 
     @SuppressLint("MissingPermission")
-    fun startScan(): Flow<BluetoothDevice> = callbackFlow {
+    fun discoverDevices(): Flow<BluetoothDevice> = callbackFlow {
         if (!hasScanPermission() || adapter == null || !adapter.isEnabled) {
             close()
             return@callbackFlow
@@ -48,4 +48,35 @@ class BluetoothScanner(
             adapter.cancelDiscovery()
         }
     }
+
+    @SuppressLint("MissingPermission")
+    fun discoverHostDevice(serverName: String): Flow<BluetoothDevice> = callbackFlow {
+        if (!hasScanPermission() || adapter == null || !adapter.isEnabled) {
+            close()
+            return@callbackFlow
+        }
+
+        val receiver = BluetoothReceiver { device ->
+            // Only emit devices whose name matches the host prefix
+            val name = device.name
+            if (!name.isNullOrEmpty() && name.startsWith(serverName, ignoreCase = true)) {
+                trySend(device).isSuccess
+            }
+        }
+
+        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
+        context.registerReceiver(receiver, filter)
+
+        try {
+            adapter.startDiscovery()
+        } catch (_: SecurityException) {
+            close()
+        }
+
+        awaitClose {
+            try { context.unregisterReceiver(receiver) } catch (_: Exception) {}
+            adapter.cancelDiscovery()
+        }
+    }
+
 }

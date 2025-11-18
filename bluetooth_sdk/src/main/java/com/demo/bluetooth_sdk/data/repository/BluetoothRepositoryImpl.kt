@@ -8,11 +8,9 @@ import com.demo.bluetooth_sdk.data.BluetoothClient
 import com.demo.bluetooth_sdk.data.BluetoothScanner
 import com.demo.bluetooth_sdk.data.BluetoothServer
 import com.demo.bluetooth_sdk.domain.repository.BluetoothRepository
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.core.annotation.Single
 
-@Single
 class BluetoothRepositoryImpl(
     private val context: Context,
     private val adapter: BluetoothAdapter?
@@ -23,7 +21,7 @@ class BluetoothRepositoryImpl(
 
     // flow for moves
     private val _incomingMoves = MutableSharedFlow<Int>()
-    override val incomingMoves = _incomingMoves
+    override val incomingData = _incomingMoves
 
     // callback to notify host immediately when socket accepted
     var onClientConnectedCallback: (() -> Unit)? = null
@@ -51,15 +49,17 @@ class BluetoothRepositoryImpl(
         )
     }
 
-    override fun startScan() = BluetoothScanner(context, adapter).startScan()
+    override fun discoverAllDevice() = BluetoothScanner(context, adapter).discoverDevices()
 
-    override suspend fun startServer() = server.waitForPlayer()
+    override fun discoverHostDevice(serverName: String) = BluetoothScanner(context, adapter).discoverHostDevice(serverName = serverName)
 
-    override suspend fun connectTo(device: BluetoothDevice) = client.connectTo(device)
+    override suspend fun createServer(serverName: String) = server.createServer(serverName)
 
-    override suspend fun sendMove(move: Int) = client.sendMove(move)
+    override suspend fun connectToDevice(device: BluetoothDevice) = client.connectTo(device)
 
-    override fun setOnClientConnected(cb: () -> Unit) {
+    override suspend fun sendData(move: Int) = client.sendMove(move)
+
+    override fun onClientConnected(cb: () -> Unit) {
         onClientConnectedCallback = cb
     }
 

@@ -45,6 +45,7 @@ android {
 
 dependencies {
     implementation(project(":bluetooth_sdk"))
+    implementation(project(":core"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -1,43 +1,45 @@
 package com.demo.bluetooth_sdk
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import com.demo.bluetooth_sdk.di.BluetoothModule
 import com.demo.bluetooth_sdk.domain.usecase.ConnectUseCase
 import com.demo.bluetooth_sdk.domain.usecase.ObserveMovesUseCase
-import com.demo.bluetooth_sdk.domain.usecase.SendMoveUseCase
+import com.demo.bluetooth_sdk.domain.usecase.SendDataUseCase
 import com.demo.bluetooth_sdk.domain.usecase.StartScanUseCase
 import com.demo.bluetooth_sdk.domain.usecase.StartServerUseCase
-import com.demo.bluetooth_sdk.sdk.GameBluetoothSdk
+import com.demo.bluetooth_sdk.sdk.ClassicBluetoothManager
 import org.koin.core.context.GlobalContext.get
-import org.koin.core.context.startKoin
-import org.koin.dsl.module
-import org.koin.ksp.generated.module
 
-object BluetoothCore {
+object BluetoothClassicSdk {
 
-    data class Config(
-        val appContext: Context,
-        val bluetoothManager: BluetoothManager
-    )
+    fun buildBluetoothSdk(context: Context): ClassicBluetoothManager {
+        return ClassicBluetoothManager()
+    }
 
-    fun init(config: Config) {
+   /* fun init(context: Context) {
         startKoin {
             modules(
-                // Koin annotation module (KSP)
                 BluetoothModule().module,
-
-                // pass AppContext to the SDK
                 module {
-                    single { config.appContext }
-                    single { config.bluetoothManager.adapter }
+                    single { context }
+                    single { (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter }
                 }
             )
         }
-    }
+    }*/
 
-    object Sdk {
-        val gameBluetoothSdk: GameBluetoothSdk
+    /*fun getModules(context: Context) = listOf(
+        BluetoothModule().module,
+        module {
+            single { context }
+            single { (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter }
+        }
+    )*/
+
+
+    /*object Manager {
+        val bluetoothSdkManager: ClassicBluetoothManager
             get() = get().get()
     }
 
@@ -51,11 +53,11 @@ object BluetoothCore {
         val startServerUseCase: StartServerUseCase
             get() = get().get()
 
-        val sendMoveUseCase: SendMoveUseCase
+        val sendDataUseCase: SendDataUseCase
             get() = get().get()
 
         val observeMovesUseCase: ObserveMovesUseCase
             get() = get().get()
 
-    }
+    }*/
 }

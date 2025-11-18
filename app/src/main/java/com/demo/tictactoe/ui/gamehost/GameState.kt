@@ -1,13 +1,13 @@
 package com.demo.tictactoe.ui.gamehost
 
-import android.bluetooth.BluetoothDevice
+import com.demo.tictactoe.core.common.model.DeviceModel
 
 data class GameState(
     val board: List<String> = List(9) { "" },
     val myMark: String = "X",
     val isMyTurn: Boolean = false,
     val statusText: String = "Waiting…",
-    val discoveredDevices: List<BluetoothDevice> = emptyList(),
+    val discoveredDevices: List<DeviceModel> = emptyList(),
 
     val gameOver: Boolean = false,
     val winner: String? = null,

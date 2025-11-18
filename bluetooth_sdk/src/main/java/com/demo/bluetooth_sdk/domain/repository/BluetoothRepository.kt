@@ -4,10 +4,11 @@ import android.bluetooth.BluetoothDevice
 import kotlinx.coroutines.flow.Flow
 
 interface BluetoothRepository {
-    fun startScan(): Flow<BluetoothDevice>
-    suspend fun startServer(): String?
-    suspend fun connectTo(device: BluetoothDevice): Boolean
-    suspend fun sendMove(move: Int)
-    val incomingMoves: Flow<Int>
-    fun setOnClientConnected(cb: () -> Unit)
+    fun discoverAllDevice(): Flow<BluetoothDevice>
+    fun discoverHostDevice(serverName: String): Flow<BluetoothDevice>
+    suspend fun createServer(serverName: String): String?
+    suspend fun connectToDevice(device: BluetoothDevice): Boolean
+    suspend fun sendData(data: Int)
+    val incomingData: Flow<Int>
+    fun onClientConnected(cb: () -> Unit)
 }

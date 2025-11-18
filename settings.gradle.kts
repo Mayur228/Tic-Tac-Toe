@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Tic Tac Toe"
 include(":app")
 include(":bluetooth_sdk")
+include(":core")

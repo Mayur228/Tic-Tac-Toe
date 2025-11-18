@@ -31,7 +31,9 @@ fun GameBoardScreen(viewModel: GameViewModel) {
         WinDialog(
             isWinner = state.winner == state.myMark,
             isDraw = state.winner == null,
-            onPlayAgain = { viewModel.resetGame() }
+            onPlayAgain = {
+            //    viewModel.resetGame()
+            }
         )
     }
 
@@ -76,7 +78,9 @@ fun GameBoardScreen(viewModel: GameViewModel) {
                                                 !state.gameOver &&
                                                 state.isMyTurn &&
                                                 value.isEmpty(),
-                                        onClick = { viewModel.makeMove(pos) }
+                                        onClick = {
+                                        //    viewModel.makeMove(pos)
+                                        }
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {

@@ -20,7 +20,8 @@ class BluetoothServer(
     private val uuid = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
 
     @SuppressLint("MissingPermission")
-    suspend fun waitForPlayer(): String? = withContext(Dispatchers.IO) {
+    suspend fun createServer(serverName: String): String? = withContext(Dispatchers.IO) {
+        adapter?.name = serverName
         val serverSocket: BluetoothServerSocket =
             adapter?.listenUsingRfcommWithServiceRecord("GameBluetooth", uuid) ?: return@withContext null
 

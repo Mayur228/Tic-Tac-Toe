@@ -1,12 +1,13 @@
 package com.demo.tictactoe.ui.gamehost
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.demo.bluetooth_sdk.sdk.GameBluetoothSdk
+import com.demo.bluetooth_sdk.sdk.ClassicBluetoothManager
+import com.demo.tictactoe.core.feature.host.domain.usecase.HostGameUseCase
+import com.demo.tictactoe.core.feature.host.domain.usecase.JoinGameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -14,16 +15,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val sdk: GameBluetoothSdk
+    private val hostGameUseCase: HostGameUseCase,
+    private val joinGameUseCase: JoinGameUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GameState())
     val state = _state.asStateFlow()
 
-    init {
+    /*init {
         // register a client-connected callback from SDK (if SDK exposes it)
         try {
-            sdk.setOnClientConnected {
+            bluetoothManager.onClientConnected {
                 _state.update {
                     it.copy(connectionState = ConnectionState.Connected, statusText = "Connected")
                 }
@@ -33,7 +35,7 @@ class GameViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            sdk.incomingMoves.collect { move ->
+            bluetoothManager.incomingData.collect { move ->
                 // special reset code
                 if (move == RESET_CODE) {
                     resetGame(receivedFromOpponent = true)
@@ -48,7 +50,7 @@ class GameViewModel @Inject constructor(
                 applyOpponentMove(move)
             }
         }
-    }
+    }*/
 
     companion object {
         // reserved code for reset sync
@@ -62,11 +64,6 @@ class GameViewModel @Inject constructor(
     // ----------------------------------------------------------------
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun hostGame() {
-        // set adapter name (best-effort, may require BLUETOOTH_ADMIN on older devices)
-        try {
-            val adapter = BluetoothAdapter.getDefaultAdapter()
-            adapter?.name = HOST_NAME_PREFIX
-        } catch (_: Exception) {}
 
         _state.update {
             it.copy(
@@ -80,7 +77,7 @@ class GameViewModel @Inject constructor(
         viewModelScope.launch {
             // waitForPlayer returns remote name or null
             val name = try {
-                sdk.waitForPlayer()
+                hostGameUseCase("Tic Tac Toe Host")
             } catch (t: Throwable) {
                 null
             }
@@ -110,18 +107,17 @@ class GameViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            sdk.scan().collectLatest { device ->
+            /*bluetoothManager.startScan("Tic Tac Toe Host").collectLatest { device ->
                 _state.update { s ->
-                    // show only advertised host devices (filter by name)
-                    val deviceName = device.name ?: ""
-                    if (!deviceName.contains(HOST_NAME_PREFIX, ignoreCase = true)) {
-                        s // ignore non-host devices
-                    } else {
-                        if (s.discoveredDevices.none { it.address == device.address }) {
-                            s.copy(discoveredDevices = s.discoveredDevices + device)
-                        } else s
-                    }
+                    s.copy(discoveredDevices = s.discoveredDevices + device)
+
                 }
+            }*/
+
+            val device = joinGameUseCase.invoke("Tic Tac Toe Host")
+
+            _state.update { s ->
+                s.copy(discoveredDevices = device)
             }
         }
     }
@@ -129,12 +125,12 @@ class GameViewModel @Inject constructor(
     // ----------------------------------------------------------------
     // CONNECT
     // ----------------------------------------------------------------
-    fun connect(device: BluetoothDevice) {
+   /* fun connect(device: BluetoothDevice) {
         _state.update { it.copy(connectionState = ConnectionState.Connecting, statusText = "Connecting...") }
 
         viewModelScope.launch {
             val success = try {
-                sdk.connect(device)
+                bluetoothManager.connectToDevice(device)
             } catch (t: Throwable) {
                 false
             }
@@ -145,22 +141,22 @@ class GameViewModel @Inject constructor(
                 _state.update { it.copy(connectionState = ConnectionState.Failed, statusText = "Connection failed") }
             }
         }
-    }
+    }*/
 
     // ----------------------------------------------------------------
     // MAKE MOVE
     // ----------------------------------------------------------------
-    fun makeMove(pos: Int) {
+    /*fun makeMove(pos: Int) {
         val s = _state.value
         if (s.gameOver || !s.isMyTurn || s.board[pos].isNotEmpty() || s.connectionState != ConnectionState.Connected) return
 
         viewModelScope.launch {
             try {
-                sdk.sendMove(pos)
+                bluetoothManager.sendData(pos)
             } catch (_: Throwable) {}
             applyLocalMove(pos)
         }
-    }
+    }*/
 
     // ----------------------------------------------------------------
     // LOCAL MOVE
@@ -206,14 +202,14 @@ class GameViewModel @Inject constructor(
     // ----------------------------------------------------------------
     // SYNC RESET
     // ----------------------------------------------------------------
-    fun resetGame(receivedFromOpponent: Boolean = false) {
+   /* fun resetGame(receivedFromOpponent: Boolean = false) {
         val mark = state.value.myMark
 
         if (!receivedFromOpponent) {
             // send reset signal to opponent
             viewModelScope.launch {
                 try {
-                    sdk.sendMove(RESET_CODE)
+                    bluetoothManager.sendData(RESET_CODE)
                 } catch (_: Throwable) {}
             }
         }
@@ -228,7 +224,7 @@ class GameViewModel @Inject constructor(
                 statusText = if (mark == "X") "Your turn" else "Opponent's turn"
             )
         }
-    }
+    }*/
 
     // ----------------------------------------------------------------
     // GAME END

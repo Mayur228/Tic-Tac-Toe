@@ -106,7 +106,7 @@ fun ScanScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            viewModel.connect(device)
+                           // viewModel.connect(device)
                             onConnected()
                         },
                     shape = RoundedCornerShape(18.dp),
