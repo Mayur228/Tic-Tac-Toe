@@ -1,8 +1,7 @@
 package com.demo.tictactoe
 
 import android.app.Application
-import com.demo.bluetooth_sdk.BluetoothClassicSdk
-import com.demo.bluetooth_sdk.sdk.ClassicBluetoothManager
+import com.demo.bluetooth_sdk.api.ClassicBluetoothSdk
 import com.demo.tictactoe.core.Core
 import com.demo.tictactoe.core.common.network.BluetoothApi
 import dagger.hilt.android.HiltAndroidApp
@@ -17,13 +16,15 @@ class TicTacToeApp : Application() {
     @Inject
     lateinit var provideActivity: FTAClass
 
+    @Inject
+    lateinit var bluetoothSdk: ClassicBluetoothSdk
+
 
     override fun onCreate() {
         super.onCreate()
-//        BluetoothClassicSdk.init(
-//            context = applicationContext
-//        )
         registerActivityLifecycleCallbacks(provideActivity)
+        bluetoothSdk = ClassicBluetoothSdk.initialize(applicationContext)
+
         initCore()
     }
 

@@ -1,6 +1,5 @@
 package com.demo.tictactoe.ui.gamehost
 
-import com.demo.bluetooth_sdk.sdk.ClassicBluetoothManager
 import com.demo.tictactoe.core.Core
 import com.demo.tictactoe.core.feature.host.domain.usecase.HostGameUseCase
 import com.demo.tictactoe.core.feature.host.domain.usecase.JoinGameUseCase

@@ -18,4 +18,7 @@ dependencies {
     implementation(libs.koin)
     implementation(libs.kspAnnotation)
     ksp(libs.kspCompiler)
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
 }

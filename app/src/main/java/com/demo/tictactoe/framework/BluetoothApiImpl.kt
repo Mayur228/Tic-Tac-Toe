@@ -1,43 +1,59 @@
 package com.demo.tictactoe.framework
 
-import android.bluetooth.BluetoothDevice
-import com.demo.bluetooth_sdk.sdk.ClassicBluetoothManager
-import com.demo.tictactoe.FTAClass
+import com.demo.bluetooth_sdk.api.ClassicBluetoothSdk
+import com.demo.bluetooth_sdk.api.ConnectionState
 import com.demo.tictactoe.core.common.model.DeviceModel
+import com.demo.tictactoe.core.common.model.BluetoothConnectionState
 import com.demo.tictactoe.core.common.network.BluetoothApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class BluetoothApiImpl @Inject constructor(
-    val manager: ClassicBluetoothManager,
-    val activityProvider: FTAClass
+    private val sdk: ClassicBluetoothSdk
 ) : BluetoothApi {
 
-    override suspend fun createServer(serverName: String) {
-        manager.hostServer(serverName)
-    }
+    // Map SDK connection state to Core module state
+    override val connectionState: Flow<BluetoothConnectionState> =
+        sdk.connectionState.map { it.toCoreState() }
 
-    override suspend fun discoverServer(serverName: String): List<DeviceModel> {
-        // collect first matching device and return
-        val devices = mutableListOf<DeviceModel>()
-        val flow: Flow<BluetoothDevice> = manager.startScan(serverName)
-        flow.collect { device ->
-            devices.add(DeviceModel(name = device.name, address = device.address))
+    override fun discoverServers(serverName: String): Flow<DeviceModel> =
+        sdk.scanHostDevices(serverName).map {
+            DeviceModel(
+                name = it.name ?: "Unknown",
+                address = it.address
+            )
         }
-        return devices
+
+    override suspend fun startServer(serverName: String) {
+        sdk.startServer(serverName)
     }
 
-    override suspend fun connectToServer(server: String): Boolean {
-        return manager.connectToDevice(server as BluetoothDevice)
+    override suspend fun connect(device: DeviceModel) {
+        val peer = sdk.findBondedPeer(device.address) ?: error("Device not found")
+        sdk.connect(peer)
     }
 
-    override suspend fun sendDataToServer(pos: Int) {
-        manager.sendData(pos)
+    override suspend fun sendMove(move: Int) {
+        sdk.send(move)
     }
 
-    override suspend fun receiveDataFromServer(): Int {
-        // collect first value from flow
-        return manager.receiveData().firstOrNull()?.toInt() ?: 0
+    override val incomingMoves: Flow<Int> = sdk.observeIncoming()
+
+    override fun disconnect() {
+        sdk.disconnect()
     }
+
+    // -----------------------------
+    // Mapping extension from SDK -> Core
+    // -----------------------------
+    private fun ConnectionState.toCoreState(): BluetoothConnectionState =
+        when (this) {
+            is ConnectionState.Idle -> BluetoothConnectionState.Idle
+            is ConnectionState.Scanning -> BluetoothConnectionState.Scanning
+            is ConnectionState.Connecting -> BluetoothConnectionState.Connecting
+            is ConnectionState.Connected -> BluetoothConnectionState.Connected(this.deviceName)
+            is ConnectionState.Disconnected -> BluetoothConnectionState.Disconnected
+            is ConnectionState.Error -> BluetoothConnectionState.Error(this.error.toString())
+        }
 }

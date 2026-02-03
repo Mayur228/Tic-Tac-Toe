@@ -3,11 +3,11 @@
   <component name="deploymentTargetSelector">
     <selectionStates>
       <SelectionState runConfigName="app">
-        <option name="selectionMode" value="DIALOG" />
-        <DropdownSelection timestamp="2025-11-16T14:24:01.109776Z">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-11-17T11:09:20.870416336Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=10BF4809JM006K5" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=RZCRA04JMTX" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,12 +15,12 @@
           <targets>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=RZCRA04JMTX" />
+                <DeviceId pluginId="LocalEmulator" identifier="path=/home/knoxpo/.android/avd/Pixel_8_Pro_API_30.avd" />
               </handle>
             </Target>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=10BF4809JM006K5" />
+                <DeviceId pluginId="PhysicalDevice" identifier="serial=RZCRA04JMTX" />
               </handle>
             </Target>
           </targets>

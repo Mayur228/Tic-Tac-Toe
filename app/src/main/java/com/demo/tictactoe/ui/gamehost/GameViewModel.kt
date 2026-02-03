@@ -1,15 +1,15 @@
 package com.demo.tictactoe.ui.gamehost
 
 import android.Manifest
-import android.bluetooth.BluetoothDevice
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.demo.bluetooth_sdk.sdk.ClassicBluetoothManager
 import com.demo.tictactoe.core.feature.host.domain.usecase.HostGameUseCase
 import com.demo.tictactoe.core.feature.host.domain.usecase.JoinGameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,36 +21,6 @@ class GameViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(GameState())
     val state = _state.asStateFlow()
-
-    /*init {
-        // register a client-connected callback from SDK (if SDK exposes it)
-        try {
-            bluetoothManager.onClientConnected {
-                _state.update {
-                    it.copy(connectionState = ConnectionState.Connected, statusText = "Connected")
-                }
-            }
-        } catch (_: Throwable) {
-            // ignore if SDK does not support callback
-        }
-
-        viewModelScope.launch {
-            bluetoothManager.incomingData.collect { move ->
-                // special reset code
-                if (move == RESET_CODE) {
-                    resetGame(receivedFromOpponent = true)
-                    return@collect
-                }
-
-                // When first move arrives -> mark connected
-                if (_state.value.connectionState != ConnectionState.Connected) {
-                    _state.update { s -> s.copy(connectionState = ConnectionState.Connected, statusText = "Connected") }
-                }
-
-                applyOpponentMove(move)
-            }
-        }
-    }*/
 
     companion object {
         // reserved code for reset sync
