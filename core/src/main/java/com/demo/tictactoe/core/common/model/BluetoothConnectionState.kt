@@ -6,7 +6,7 @@ sealed class BluetoothConnectionState {
     object Connecting : BluetoothConnectionState()
     data class Connected(val peerName: String?) : BluetoothConnectionState()
     data class Error(val message: String) : BluetoothConnectionState()
-    companion object {
-        val Disconnected: BluetoothConnectionState
-    }
+
+    object Disconnected : BluetoothConnectionState()
 }
+

@@ -1,7 +1,7 @@
 package com.demo.tictactoe
 
 import android.app.Application
-import com.demo.bluetooth_sdk.api.ClassicBluetoothSdk
+import com.buildwithmayur.bluetooth.api.ClassicBluetoothSdk
 import com.demo.tictactoe.core.Core
 import com.demo.tictactoe.core.common.network.BluetoothApi
 import dagger.hilt.android.HiltAndroidApp

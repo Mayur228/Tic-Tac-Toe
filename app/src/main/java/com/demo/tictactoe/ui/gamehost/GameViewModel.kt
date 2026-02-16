@@ -77,17 +77,14 @@ class GameViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            /*bluetoothManager.startScan("Tic Tac Toe Host").collectLatest { device ->
+            // Use Flow from joinGameUseCase
+            joinGameUseCase.invoke(HOST_NAME_PREFIX).collect { device ->
                 _state.update { s ->
-                    s.copy(discoveredDevices = s.discoveredDevices + device)
-
+                    // Avoid duplicates
+                    if (s.discoveredDevices.none { it.address == device.address }) {
+                        s.copy(discoveredDevices = s.discoveredDevices + device)
+                    } else s
                 }
-            }*/
-
-            val device = joinGameUseCase.invoke("Tic Tac Toe Host")
-
-            _state.update { s ->
-                s.copy(discoveredDevices = device)
             }
         }
     }

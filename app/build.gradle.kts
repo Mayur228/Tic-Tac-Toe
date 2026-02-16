@@ -44,7 +44,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":bluetooth_sdk"))
     implementation(project(":core"))
 
     implementation(libs.androidx.core.ktx)
@@ -80,6 +79,8 @@ dependencies {
 
     //Navigation
     implementation(libs.androidx.navigation.compose)
+
+    implementation("com.buildwithmayur:android-bluetooth-sdk:1.0.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
