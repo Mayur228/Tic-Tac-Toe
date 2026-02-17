@@ -7,7 +7,6 @@ import com.demo.tictactoe.core.common.model.DeviceModel
 import com.demo.tictactoe.core.common.model.BluetoothConnectionState
 import com.demo.tictactoe.core.common.network.BluetoothApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -32,14 +31,13 @@ class BluetoothApiImpl @Inject constructor(
 
     // Connect to a device
     override suspend fun connect(device: DeviceModel) {
-        val peer = sdk.scanDevices() // we need the peer from scan
-            .map { it } // mapping placeholder
-            // In real case, you should find matching peer by address
-            // But SDK doesn't provide direct getByAddress, so you might store scanned peers somewhere
-            // Example: peers.first { it.address == device.address }
-            .first() // placeholder
+        val peer = BluetoothPeer(
+            name = device.name,
+            address = device.address
+        )
         sdk.connect(peer).getOrThrow()
     }
+
 
     // Send move as ByteArray
     override suspend fun sendMove(move: Int) {
