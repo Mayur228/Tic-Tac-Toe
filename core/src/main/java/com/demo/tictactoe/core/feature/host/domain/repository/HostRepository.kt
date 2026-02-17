@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface HostRepository {
     suspend fun hostGame(hostName: String)
-    fun joinGame(hostName: String): Flow<DeviceModel>  // Flow for streaming devices
-    fun connectionState(): Flow<BluetoothConnectionState>
+    suspend fun joinGame(hostName: String): Flow<DeviceModel>  // Flow for streaming devices
+    suspend fun connectionState(): Flow<BluetoothConnectionState>
+    suspend fun stop()
 }

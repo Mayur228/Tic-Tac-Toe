@@ -7,7 +7,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class JoinGameUseCase(private val repository: HostRepository) {
-    operator fun invoke(hostName: String): Flow<DeviceModel> {
+    suspend operator fun invoke(hostName: String): Flow<DeviceModel> {
         return repository.joinGame(hostName)
     }
 }

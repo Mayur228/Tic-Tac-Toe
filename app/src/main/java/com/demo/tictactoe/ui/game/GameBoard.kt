@@ -19,6 +19,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.demo.tictactoe.ui.game.component.DifficultyDialog
+import com.demo.tictactoe.ui.game.component.FirstMoveDialog
 import com.demo.tictactoe.ui.game.component.WinDialog
 import com.demo.tictactoe.ui.game.component.WinLineOverlay
 import com.demo.tictactoe.ui.gamehost.ConnectionState
@@ -32,6 +34,25 @@ fun GameBoardScreen(viewModel: GameViewModel) {
     val boardSize = 330.dp
     val cellColor = Color(0xFF0F1A30)
     val borderColor = Color(0xFF22304A)
+
+    if (state.showDifficultyDialog) {
+        DifficultyDialog(
+            onSelect = { difficulty ->
+                viewModel.onDifficultySelected(difficulty)
+            }
+        )
+    }
+
+
+    if (state.showFirstMoveDialog) {
+        FirstMoveDialog(
+            isSinglePlayer = state.isSinglePlayer,
+            onResult = { isMeFirst ->
+                viewModel.selectFirstPlayer(isMeFirst)
+            }
+        )
+    }
+
 
     if (state.gameOver) {
         WinDialog(
@@ -132,10 +153,14 @@ fun GameBoardScreen(viewModel: GameViewModel) {
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = LocalIndication.current,
-                                        enabled = state.connectionState == ConnectionState.Connected &&
-                                                !state.gameOver &&
-                                                state.isMyTurn &&
-                                                value.isEmpty(),
+                                        enabled =
+                                            !state.gameOver &&
+                                                    state.isMyTurn &&
+                                                    value.isEmpty() &&
+                                                    (
+                                                            state.isSinglePlayer ||
+                                                                    state.connectionState == ConnectionState.Connected
+                                                            ),
                                         onClick = {
                                             viewModel.makeMove(pos)
                                         }

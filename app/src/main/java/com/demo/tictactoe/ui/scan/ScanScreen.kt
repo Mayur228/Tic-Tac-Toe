@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.demo.tictactoe.ui.gamehost.ConnectionState
 import com.demo.tictactoe.ui.gamehost.GameViewModel
 
 @SuppressLint("MissingPermission")
@@ -27,7 +28,19 @@ fun ScanScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    // Animation for pulsing effect
+    // ✅ Start scanning automatically when screen opens
+    LaunchedEffect(Unit) {
+        viewModel.joinGame()
+    }
+
+    // ✅ Navigate ONLY when actually connected
+    LaunchedEffect(state.connectionState) {
+        if (state.connectionState == ConnectionState.Connected) {
+            onConnected()
+        }
+    }
+
+    // Animation for pulsing effect (UNCHANGED)
     val infiniteTransition = rememberInfiniteTransition()
     val pulse by infiniteTransition.animateFloat(
         initialValue = 0.8f,
@@ -106,8 +119,9 @@ fun ScanScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
+                            // ❌ Removed wrong immediate navigation
+                            // ✅ Only trigger connection
                             viewModel.connect(device)
-                            onConnected()
                         },
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(

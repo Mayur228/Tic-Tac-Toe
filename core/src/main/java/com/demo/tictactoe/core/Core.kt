@@ -8,6 +8,7 @@ import com.demo.tictactoe.core.feature.game.domain.usecase.ObserveMovesUseCase
 import com.demo.tictactoe.core.feature.game.domain.usecase.SendMoveUseCase
 import com.demo.tictactoe.core.feature.host.domain.usecase.HostGameUseCase
 import com.demo.tictactoe.core.feature.host.domain.usecase.JoinGameUseCase
+import com.demo.tictactoe.core.feature.host.domain.usecase.StopConnectionUseCase
 import org.koin.core.context.GlobalContext.get
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -37,6 +38,9 @@ object Core {
             get() = get().get()
 
         val joinGameUseCase: JoinGameUseCase
+            get() = get().get()
+
+        val stopConnectionUseCase: StopConnectionUseCase
             get() = get().get()
 
     }

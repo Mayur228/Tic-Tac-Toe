@@ -11,6 +11,8 @@ interface HostSource {
     fun discoverServers(hostName: String): Flow<DeviceModel>
     suspend fun startServer(hostName: String)
     suspend fun connectToDevice(device: DeviceModel)
+    suspend fun disconnect()
+
 }
 
 @Factory
@@ -28,4 +30,9 @@ class HostSourceImpl(private val bluetoothApi: BluetoothApi): HostSource {
     override suspend fun connectToDevice(device: DeviceModel) {
         bluetoothApi.connect(device)
     }
+
+    override suspend fun disconnect() {
+        bluetoothApi.disconnect()
+    }
+
 }

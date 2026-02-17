@@ -7,6 +7,7 @@ import com.demo.tictactoe.core.feature.game.domain.usecase.ObserveMovesUseCase
 import com.demo.tictactoe.core.feature.game.domain.usecase.SendMoveUseCase
 import com.demo.tictactoe.core.feature.host.domain.usecase.HostGameUseCase
 import com.demo.tictactoe.core.feature.host.domain.usecase.JoinGameUseCase
+import com.demo.tictactoe.core.feature.host.domain.usecase.StopConnectionUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,6 +46,11 @@ class GameViewModelModule {
     @Provides
     fun provideEvaluateBoardUseCase(): EvaluateBoardUseCase {
         return Core.Game.evaluateBoardUseCase
+    }
+
+    @Provides
+    fun provideStopConnectionUseCase(): StopConnectionUseCase {
+        return Core.Host.stopConnectionUseCase
     }
 
 }

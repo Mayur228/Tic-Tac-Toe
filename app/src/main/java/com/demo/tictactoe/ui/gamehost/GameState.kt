@@ -1,6 +1,7 @@
 package com.demo.tictactoe.ui.gamehost
 
 import com.demo.tictactoe.core.common.model.DeviceModel
+import com.demo.tictactoe.ui.AiDifficulty
 
 data class GameState(
     val board: List<String> = List(9) { "" },
@@ -15,7 +16,16 @@ data class GameState(
 
     val winningLine: List<Int>? = null,
 
-    val connectionState: ConnectionState = ConnectionState.Idle
+    val connectionState: ConnectionState = ConnectionState.Idle,
+
+    val isSinglePlayer: Boolean = false,
+    val aiDifficulty: AiDifficulty = AiDifficulty.MEDIUM,
+
+    val showFirstMoveDialog: Boolean = false,
+    val isFirstMoveDecided: Boolean = false,
+
+    val showDifficultyDialog: Boolean = false,
+
 )
 
 enum class ConnectionState {

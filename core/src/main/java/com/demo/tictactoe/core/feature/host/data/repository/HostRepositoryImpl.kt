@@ -18,7 +18,7 @@ class HostRepositoryImpl(private val source: HostSource) : HostRepository {
         source.startServer(hostName)
     }
 
-    override fun joinGame(hostName: String): Flow<DeviceModel> =
+    override suspend fun joinGame(hostName: String): Flow<DeviceModel> =
         source.discoverServers(hostName).onEach { device ->
             // Optional: cache logic to avoid duplicates
             if (_discoveredDevices.add(device.address)) {
@@ -26,6 +26,11 @@ class HostRepositoryImpl(private val source: HostSource) : HostRepository {
             }
         }
 
-    override fun connectionState(): Flow<BluetoothConnectionState> =
+    override suspend fun connectionState(): Flow<BluetoothConnectionState> =
         source.connectionState()
+
+    override suspend fun stop() {
+        source.disconnect()   // delegate to BluetoothApi
+    }
+
 }

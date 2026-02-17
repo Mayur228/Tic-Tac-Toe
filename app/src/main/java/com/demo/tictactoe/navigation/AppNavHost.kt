@@ -7,7 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.demo.tictactoe.ui.game.GameBoardScreen
 import com.demo.tictactoe.ui.gamehost.GameViewModel
-import com.demo.tictactoe.ui.gamehost.HostJoinScreen
+import com.demo.tictactoe.ui.home.HomeScreen
+import com.demo.tictactoe.ui.host.HostScreen
 import com.demo.tictactoe.ui.scan.ScanScreen
 import com.demo.tictactoe.ui.waiting.WaitingScreen
 
@@ -18,38 +19,65 @@ fun AppNavHost(navController: NavHostController) {
 
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.HOST
+        startDestination = NavRoutes.HOME
     ) {
 
-        // ------------------ HOST / JOIN ------------------
-        composable(NavRoutes.HOST) {
-            HostJoinScreen(
-                viewModel = viewModel,
-                onHost = {
-                    navController.navigate(NavRoutes.GAME)
+        // ------------------ HOME ------------------
+        composable(NavRoutes.HOME) {
+            HomeScreen(
+                onHostClick = {
+                    navController.navigate(NavRoutes.HOST)
                 },
-                onJoin = {
+                onJoinClick = {
                     navController.navigate(NavRoutes.SCAN)
+                },
+                onAiClick = {
+                    viewModel.startSinglePlayer()
+                    navController.navigate(NavRoutes.GAME)
                 }
             )
         }
 
-        composable(NavRoutes.WAITING) {
-            WaitingScreen(viewModel) {
-                navController.navigate(NavRoutes.GAME)
-            }
+
+        // ------------------ HOST ------------------
+        composable(NavRoutes.HOST) {
+            HostScreen(
+                viewModel = viewModel,
+                onConnected = {
+                    navController.navigate(NavRoutes.WAITING)
+                }
+            )
         }
 
-        // ------------------ GAME SCREEN ------------------
+        // ------------------ WAITING ------------------
+        composable(NavRoutes.WAITING) {
+            WaitingScreen(
+                viewModel = viewModel,
+                onConnected = {
+                    navController.navigate(NavRoutes.GAME) {
+                        popUpTo(NavRoutes.HOME)
+                    }
+                },
+                onCancel = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+
+        // ------------------ GAME ------------------
         composable(NavRoutes.GAME) {
             GameBoardScreen(viewModel)
         }
 
-        // ------------------ SCAN → GAME ------------------
+        // ------------------ SCAN ------------------
         composable(NavRoutes.SCAN) {
-            ScanScreen(viewModel = viewModel, onConnected = {
-                navController.navigate(NavRoutes.GAME)
-            })
+            ScanScreen(
+                viewModel = viewModel,
+                onConnected = {
+                    navController.navigate(NavRoutes.GAME)
+                }
+            )
         }
     }
 }
