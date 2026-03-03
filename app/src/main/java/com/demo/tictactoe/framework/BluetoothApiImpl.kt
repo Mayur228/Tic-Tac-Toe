@@ -20,7 +20,7 @@ class BluetoothApiImpl @Inject constructor(
 
     // Discover devices as a Flow
     override fun discoverServers(serverName: String): Flow<DeviceModel> =
-        sdk.scanDevices().map { peer ->
+        sdk.scanHostDevices(serverName = serverName).map { peer ->
             peer.toDeviceModel()
         }
 

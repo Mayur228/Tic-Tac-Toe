@@ -1,4 +1,4 @@
-package com.demo.tictactoe.ui.host
+package com.demo.tictactoe.ui.gamehost
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.demo.tictactoe.common.BlePermissionHelper
-import com.demo.tictactoe.ui.gamehost.GameViewModel
 
 @SuppressLint("ContextCastToActivity")
 @Composable
