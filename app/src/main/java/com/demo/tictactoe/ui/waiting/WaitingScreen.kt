@@ -65,7 +65,7 @@ fun WaitingScreen(
             // -------- CANCEL BUTTON --------
             Button(
                 onClick = {
-                    viewModel.cancelConnection()
+                    //viewModel.cancelConnection()
                     onCancel()
                 }
             ) {
@@ -75,7 +75,7 @@ fun WaitingScreen(
     }
 
     BackHandler {
-        viewModel.cancelConnection()
+        //viewModel.cancelConnection()
         onCancel()
     }
 

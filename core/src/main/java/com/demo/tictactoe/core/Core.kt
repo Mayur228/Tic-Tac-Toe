@@ -2,13 +2,13 @@ package com.demo.tictactoe.core
 
 import com.demo.tictactoe.core.common.di.CoreModule
 import com.demo.tictactoe.core.common.network.BluetoothApi
-import com.demo.tictactoe.core.feature.game.domain.usecase.ConnectToGameUseCase
 import com.demo.tictactoe.core.feature.game.domain.usecase.EvaluateBoardUseCase
 import com.demo.tictactoe.core.feature.game.domain.usecase.ObserveMovesUseCase
 import com.demo.tictactoe.core.feature.game.domain.usecase.SendMoveUseCase
 import com.demo.tictactoe.core.feature.host.domain.usecase.HostGameUseCase
-import com.demo.tictactoe.core.feature.host.domain.usecase.JoinGameUseCase
-import com.demo.tictactoe.core.feature.host.domain.usecase.StopConnectionUseCase
+import com.demo.tictactoe.core.feature.scan.domain.usecase.JoinUseCase
+import com.demo.tictactoe.core.feature.scan.domain.usecase.ScanHostUseCase
+import com.demo.tictactoe.core.feature.scan.domain.usecase.StopConnectionUseCase
 import org.koin.core.context.GlobalContext.get
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -37,18 +37,23 @@ object Core {
         val hostGameUseCase: HostGameUseCase
             get() = get().get()
 
-        val joinGameUseCase: JoinGameUseCase
+        /*val stopConnectionUseCase: StopConnectionUseCase
+            get() = get().get()*/
+
+    }
+
+    object Join {
+        val joinGameUseCase: JoinUseCase
+            get() = get().get()
+
+        val scanHostUseCase: ScanHostUseCase
             get() = get().get()
 
         val stopConnectionUseCase: StopConnectionUseCase
             get() = get().get()
-
     }
 
     object Game {
-        val ConnectToGameUseCase: ConnectToGameUseCase
-            get() = get().get()
-
         val ObserveMovesUseCase: ObserveMovesUseCase
             get() = get().get()
 

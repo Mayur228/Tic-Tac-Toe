@@ -19,43 +19,45 @@ fun AppNavHost(navController: NavHostController) {
 
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.HOME
+        startDestination = NavRoutes.Home.route
     ) {
 
         // ------------------ HOME ------------------
-        composable(NavRoutes.HOME) {
+        composable(NavRoutes.Home.route) {
             HomeScreen(
                 onHostClick = {
-                    navController.navigate(NavRoutes.HOST)
+                    navController.navigate(NavRoutes.Host.route)
                 },
                 onJoinClick = {
-                    navController.navigate(NavRoutes.SCAN)
+                    navController.navigate(NavRoutes.Scan.route)
                 },
                 onAiClick = {
-                    viewModel.startSinglePlayer()
-                    navController.navigate(NavRoutes.GAME)
+                    navController.navigate(
+                        NavRoutes.Game.createRoute(true) // ✅ AI
+                    )
                 }
             )
         }
 
-
         // ------------------ HOST ------------------
-        composable(NavRoutes.HOST) {
+        composable(NavRoutes.Host.route) {
             HostScreen(
                 viewModel = viewModel,
                 onConnected = {
-                    navController.navigate(NavRoutes.WAITING)
+                    navController.navigate(NavRoutes.Waiting.route)
                 }
             )
         }
 
         // ------------------ WAITING ------------------
-        composable(NavRoutes.WAITING) {
+        composable(NavRoutes.Waiting.route) {
             WaitingScreen(
                 viewModel = viewModel,
                 onConnected = {
-                    navController.navigate(NavRoutes.GAME) {
-                        popUpTo(NavRoutes.HOME)
+                    navController.navigate(
+                        NavRoutes.Game.createRoute(false) // ✅ Multiplayer
+                    ) {
+                        popUpTo(NavRoutes.Home.route)
                     }
                 },
                 onCancel = {
@@ -64,18 +66,31 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
 
-
         // ------------------ GAME ------------------
-        composable(NavRoutes.GAME) {
-            GameBoardScreen(viewModel)
+        composable(
+            route = NavRoutes.Game.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("isSinglePlayer") {
+                    type = androidx.navigation.NavType.BoolType
+                }
+            )
+        ) { backStackEntry ->
+
+            val isSinglePlayer =
+                backStackEntry.arguments?.getBoolean("isSinglePlayer") ?: false
+
+            GameBoardScreen(
+                isSinglePlayer = isSinglePlayer
+            )
         }
 
         // ------------------ SCAN ------------------
-        composable(NavRoutes.SCAN) {
+        composable(NavRoutes.Scan.route) {
             ScanScreen(
-                viewModel = viewModel,
                 onConnected = {
-                    navController.navigate(NavRoutes.GAME)
+                    navController.navigate(
+                        NavRoutes.Game.createRoute(false) // ✅ Multiplayer
+                    )
                 }
             )
         }

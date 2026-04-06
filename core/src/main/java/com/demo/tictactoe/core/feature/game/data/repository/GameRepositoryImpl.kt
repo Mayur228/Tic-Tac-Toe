@@ -12,9 +12,6 @@ class GameRepositoryImpl(
     private val source: GameSource
 ) : GameRepository {
 
-    override suspend fun connect(device: DeviceModel) =
-        source.connect(device)
-
     override suspend fun sendMove(move: Int) =
         source.sendMove(move)
 

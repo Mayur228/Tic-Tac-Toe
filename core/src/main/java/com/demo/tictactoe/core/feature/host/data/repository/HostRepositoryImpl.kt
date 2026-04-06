@@ -18,19 +18,7 @@ class HostRepositoryImpl(private val source: HostSource) : HostRepository {
         source.startServer(hostName)
     }
 
-    override suspend fun joinGame(hostName: String): Flow<DeviceModel> =
-        source.discoverServers(hostName).onEach { device ->
-            // Optional: cache logic to avoid duplicates
-            if (_discoveredDevices.add(device.address)) {
-                // new device discovered
-            }
-        }
-
     override suspend fun connectionState(): Flow<BluetoothConnectionState> =
         source.connectionState()
-
-    override suspend fun stop() {
-        source.disconnect()   // delegate to BluetoothApi
-    }
 
 }

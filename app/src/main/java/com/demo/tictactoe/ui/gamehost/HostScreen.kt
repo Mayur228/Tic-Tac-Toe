@@ -27,9 +27,7 @@ fun HostScreen(
     viewModel: GameViewModel,
     onConnected: () -> Unit
 ) {
-
     val activity = LocalContext.current as Activity
-    var hostName by remember { mutableStateOf("") }
     var isWaiting by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -50,7 +48,7 @@ fun HostScreen(
             }
 
         activity.startActivity(discoverIntent)
-        viewModel.hostGame(hostName)
+        viewModel.hostGame()
         isWaiting = true
     }
 
@@ -74,24 +72,13 @@ fun HostScreen(
 
         if (!isWaiting) {
 
-            OutlinedTextField(
-                value = hostName,
-                onValueChange = { hostName = it },
-                label = { Text("Enter Your Name") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-
             Spacer(Modifier.height(30.dp))
 
             Button(
                 onClick = {
-                    if (hostName.isNotBlank()) {
-                        permissionLauncher.launch(
-                            BlePermissionHelper.requiredPermissions()
-                        )
-                    }
+                    permissionLauncher.launch(
+                        BlePermissionHelper.requiredPermissions()
+                    )
                 },
                 modifier = Modifier
                     .width(230.dp)

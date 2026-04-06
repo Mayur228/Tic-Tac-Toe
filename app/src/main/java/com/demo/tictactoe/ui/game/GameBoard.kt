@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.demo.tictactoe.ui.game.component.DifficultyDialog
 import com.demo.tictactoe.ui.game.component.FirstMoveDialog
 import com.demo.tictactoe.ui.game.component.WinDialog
@@ -27,9 +28,16 @@ import com.demo.tictactoe.ui.gamehost.ConnectionState
 import com.demo.tictactoe.ui.gamehost.GameViewModel
 
 @Composable
-fun GameBoardScreen(viewModel: GameViewModel) {
+fun GameBoardScreen(isSinglePlayer: Boolean) {
 
+    val viewModel: GameBoardViewModel = hiltViewModel()
     val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(isSinglePlayer) {
+        if (isSinglePlayer) {
+            viewModel.startSinglePlayer()
+        }
+    }
 
     val boardSize = 330.dp
     val cellColor = Color(0xFF0F1A30)

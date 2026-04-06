@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import org.koin.core.annotation.Factory
 
 interface GameSource {
-    suspend fun connect(device: DeviceModel)
     suspend fun sendMove(move: Int)
     fun observeMoves(): Flow<Int>
     fun connectionState(): Flow<BluetoothConnectionState>
@@ -18,10 +17,6 @@ interface GameSource {
 class GameSourceImpl(
     private val bluetoothApi: BluetoothApi
 ) : GameSource {
-
-    override suspend fun connect(device: DeviceModel) {
-        bluetoothApi.connect(device)
-    }
 
     override suspend fun sendMove(move: Int) {
         bluetoothApi.sendMove(move)

@@ -8,7 +8,6 @@ data class GameState(
     val myMark: String = "X",
     val isMyTurn: Boolean = false,
     val statusText: String = "Waiting…",
-    val discoveredDevices: List<DeviceModel> = emptyList(),
 
     val gameOver: Boolean = false,
     val winner: String? = null,
@@ -29,5 +28,5 @@ data class GameState(
 )
 
 enum class ConnectionState {
-    Idle, Advertising, Scanning, Connecting, Connected, Failed
+    Idle, Advertising, Scanning, Connecting, Connected, Failed, Cancelled
 }
