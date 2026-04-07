@@ -30,9 +30,11 @@ fun HostScreen(
     val activity = LocalContext.current as Activity
     var isWaiting by remember { mutableStateOf(false) }
 
+    val viewState = viewModel.state.collectAsState()
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { result ->
+    ) @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) { result ->
 
         val allGranted = result.values.all { it }
         if (!allGranted) return@rememberLauncherForActivityResult
@@ -61,48 +63,58 @@ fun HostScreen(
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text(
-            text = "Host Game",
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
-        )
+        when(viewState.value) {
+            is HostState.Error -> {
 
-        Spacer(Modifier.height(30.dp))
-
-        if (!isWaiting) {
-
-            Spacer(Modifier.height(30.dp))
-
-            Button(
-                onClick = {
-                    permissionLauncher.launch(
-                        BlePermissionHelper.requiredPermissions()
-                    )
-                },
-                modifier = Modifier
-                    .width(230.dp)
-                    .height(55.dp),
-                shape = RoundedCornerShape(30.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4C9EFF),
-                    contentColor = Color.White
-                )
-            ) {
-                Text("Start Hosting", fontSize = 18.sp)
             }
+            HostState.Loading -> {
 
-        } else {
+            }
+            is HostState.Success -> {
+                Text(
+                    text = "Host Game",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
 
-            Text(
-                text = "Waiting for player...",
-                fontSize = 18.sp,
-                color = Color.White
-            )
+                Spacer(Modifier.height(30.dp))
 
-            Spacer(Modifier.height(20.dp))
+                if (!isWaiting) {
 
-            CircularProgressIndicator(color = Color.White)
+                    Spacer(Modifier.height(30.dp))
+
+                    Button(
+                        onClick = {
+                            permissionLauncher.launch(
+                                BlePermissionHelper.requiredPermissions()
+                            )
+                        },
+                        modifier = Modifier
+                            .width(230.dp)
+                            .height(55.dp),
+                        shape = RoundedCornerShape(30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4C9EFF),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Start Hosting", fontSize = 18.sp)
+                    }
+
+                } else {
+
+                    Text(
+                        text = "Waiting for player...",
+                        fontSize = 18.sp,
+                        color = Color.White
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    CircularProgressIndicator(color = Color.White)
+                }
+            }
         }
     }
 }

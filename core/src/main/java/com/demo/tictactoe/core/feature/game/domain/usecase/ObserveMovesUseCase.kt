@@ -8,6 +8,6 @@ import org.koin.core.annotation.Factory
 class ObserveMovesUseCase(
     private val repository: GameRepository
 ) {
-    operator fun invoke(): Flow<Int> =
+    suspend operator fun invoke(): Flow<Int> =
         repository.observeMoves()
 }

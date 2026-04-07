@@ -2,15 +2,18 @@ package com.demo.tictactoe.ui.scan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.demo.tictactoe.common.GameConfig.HOST_NAME_PREFIX
+import com.demo.tictactoe.core.Resource
+import com.demo.tictactoe.core.common.model.ConnectionModel
 import com.demo.tictactoe.core.common.model.DeviceModel
 import com.demo.tictactoe.core.feature.scan.domain.usecase.JoinUseCase
 import com.demo.tictactoe.core.feature.scan.domain.usecase.ScanHostUseCase
 import com.demo.tictactoe.core.feature.scan.domain.usecase.StopConnectionUseCase
 import com.demo.tictactoe.ui.gamehost.ConnectionState
-import com.demo.tictactoe.ui.gamehost.GameViewModel.Companion.HOST_NAME_PREFIX
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -57,12 +60,20 @@ class ScanViewModel @Inject constructor(
         viewModelScope.launch {
             val result = scanHostUseCase.invoke(HOST_NAME_PREFIX)
 
-            result.collect {
-                _state.value = ScanState.Success(
-                    discoveredDevices = listOf(it),
-                    connectionState = ConnectionState.Scanning,
-                    startGame = false
-                )
+            when(result) {
+                is Resource.Data<Flow<DeviceModel>> -> {
+                    result.value.collect {
+                        _state.value = ScanState.Success(
+                            discoveredDevices = listOf(it),
+                            connectionState = ConnectionState.Scanning,
+                            startGame = false
+                        )
+                    }
+
+                }
+                is Resource.Error -> {
+
+                }
             }
         }
     }
@@ -76,21 +87,22 @@ class ScanViewModel @Inject constructor(
         _state.value = ScanState.Loading
 
         viewModelScope.launch {
-            try {
-                connectToGameUseCase(device)
-                val current = _state.value as ScanState.Success
+            val result = connectToGameUseCase.invoke(device)
 
-                timeoutJob?.cancel()
-                scanJob?.cancel()
+            when(result){
+                is Resource.Data<ConnectionModel> -> {
+                    timeoutJob?.cancel()
+                    scanJob?.cancel()
 
-                _state.value = ScanState.Success(
-                    discoveredDevices = current.discoveredDevices,
-                    connectionState = ConnectionState.Connected,
-                    startGame = true
-                )
+                    _state.value = ScanState.Success(
+                        discoveredDevices = listOf(result.value.peer),
+                        connectionState = ConnectionState.Connected,
+                        startGame = result.value.isConnected
+                    )
+                }
+                is Resource.Error -> {
 
-            } catch (t: Throwable) {
-
+                }
             }
         }
     }
