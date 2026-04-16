@@ -16,31 +16,46 @@ import javax.inject.Inject
 class GameViewModel @Inject constructor(
     private val hostGameUseCase: HostGameUseCase,
 ) : ViewModel() {
+
     private val _state = MutableStateFlow<HostState>(HostState.Loading)
     val state = _state.asStateFlow()
 
-    fun hostGame() {
+    private var isStarted = false
+
+    fun startHosting() {
+        if (isStarted) return
+        isStarted = true
 
         viewModelScope.launch {
-            val result = hostGameUseCase(HOST_NAME_PREFIX)
 
+            // ✅ Immediately show waiting state
             _state.value = HostState.Success(
-                statusText = "Host is Waiting for player",
+                statusText = "Waiting for player...",
                 connectionState = ConnectionState.Advertising
             )
-            when(result) {
+
+            val result = hostGameUseCase("TicTacToe")
+
+            when (result) {
                 is Resource.Data<ServerModel> -> {
-                   _state.value = HostState.Success(
-                       connectionState = ConnectionState.Connected,
-                       statusText = "Connected with $result"
-                   )
+                    _state.value = HostState.Success(
+                        connectionState = ConnectionState.Connected,
+                        statusText = "Player connected!"
+                    )
                 }
+
                 is Resource.Error -> {
-                    _state.value = HostState.Error(message = result.throwable.message ?: "Unknown Error")
+                    _state.value = HostState.Error(
+                        message = result.throwable.message ?: "Unknown Error"
+                    )
                 }
             }
         }
     }
 
-
+    fun cancelConnection() {
+        isStarted = false
+        _state.value = HostState.Loading
+        // TODO: call Bluetooth disconnect
+    }
 }

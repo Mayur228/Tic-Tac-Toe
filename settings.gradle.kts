@@ -17,7 +17,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url = uri("/home/knoxpo/AndroidStudioProjects/androidbluetoothsdk/local-repo")
+            //url = uri("/home/knoxpo/AndroidStudioProjects/androidbluetoothsdk/local-repo")
+            url = uri("/Users/mayursinhparmar/AndroidStudioProjects/android-bluetooth-sdk/local-repo")
         }
     }
 }

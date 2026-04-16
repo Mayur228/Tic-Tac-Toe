@@ -14,9 +14,6 @@ import com.demo.tictactoe.ui.waiting.WaitingScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
-
-    val viewModel: GameViewModel = hiltViewModel()
-
     NavHost(
         navController = navController,
         startDestination = NavRoutes.Home.route
@@ -42,8 +39,7 @@ fun AppNavHost(navController: NavHostController) {
         // ------------------ HOST ------------------
         composable(NavRoutes.Host.route) {
             HostScreen(
-                viewModel = viewModel,
-                onConnected = {
+                onStartWaiting = {
                     navController.navigate(NavRoutes.Waiting.route)
                 }
             )
@@ -51,6 +47,8 @@ fun AppNavHost(navController: NavHostController) {
 
         // ------------------ WAITING ------------------
         composable(NavRoutes.Waiting.route) {
+            val viewModel: GameViewModel = hiltViewModel() // ✅ HERE
+
             WaitingScreen(
                 viewModel = viewModel,
                 onConnected = {

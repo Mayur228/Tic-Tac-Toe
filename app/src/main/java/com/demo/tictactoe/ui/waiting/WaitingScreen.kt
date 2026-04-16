@@ -12,8 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.demo.tictactoe.ui.gamehost.ConnectionState
 import com.demo.tictactoe.ui.gamehost.GameViewModel
+import com.demo.tictactoe.ui.gamehost.HostState
 
 @Composable
 fun WaitingScreen(
@@ -23,49 +25,53 @@ fun WaitingScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    // Navigate when connected
-    LaunchedEffect(state.connectionState) {
-        if (state.connectionState == ConnectionState.Connected) {
-            onConnected()
+    var hasNavigated by remember { mutableStateOf(false) }
+
+    // ✅ Start hosting ONCE
+    LaunchedEffect(Unit) {
+        viewModel.startHosting()
+    }
+
+    // ✅ Navigate to Game
+    LaunchedEffect(state) {
+        if (!hasNavigated && state is HostState.Success) {
+            val s = state as HostState.Success
+
+            if (s.connectionState == ConnectionState.Connected) {
+                hasNavigated = true
+                onConnected()
+            }
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF07102B))
-            .padding(20.dp),
+            .background(Color(0xFF07102B)),
         contentAlignment = Alignment.Center
     ) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            CircularProgressIndicator(
-                color = Color(0xFF4C9EFF),
-                strokeWidth = 4.dp,
-                modifier = Modifier.size(60.dp)
-            )
+            CircularProgressIndicator(color = Color(0xFF4C9EFF))
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = when (state.connectionState) {
-                    ConnectionState.Advertising -> "Waiting for player..."
-                    ConnectionState.Connecting -> "Connecting..."
-                    ConnectionState.Connected -> "Connected!"
-                    ConnectionState.Failed -> "Connection Failed"
+                text = when (state) {
+                    is HostState.Success -> (state as HostState.Success).statusText
+                    is HostState.Error -> (state as HostState.Error).message
                     else -> "Preparing..."
                 },
-                fontSize = 24.sp,
-                color = Color.White
+                color = Color.White,
+                fontSize = 20.sp
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // -------- CANCEL BUTTON --------
             Button(
                 onClick = {
-                    //viewModel.cancelConnection()
+                    viewModel.cancelConnection()
                     onCancel()
                 }
             ) {
@@ -75,8 +81,7 @@ fun WaitingScreen(
     }
 
     BackHandler {
-        //viewModel.cancelConnection()
+        viewModel.cancelConnection()
         onCancel()
     }
-
 }

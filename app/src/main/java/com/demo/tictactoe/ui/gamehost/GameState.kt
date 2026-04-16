@@ -1,12 +1,10 @@
 package com.demo.tictactoe.ui.gamehost
 
-import com.demo.tictactoe.ui.AiDifficulty
-
 sealed class HostState {
     data object Loading: HostState()
     data class Success(
         val statusText: String = "Waiting…",
-        val awaitingAck: Boolean = false,
+        //val awaitingAck: Boolean = false,
         val connectionState: ConnectionState = ConnectionState.Idle,
     ): HostState()
     data class Error(val message: String): HostState()

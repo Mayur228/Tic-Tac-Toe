@@ -39,36 +39,24 @@ fun GameBoardScreen(isSinglePlayer: Boolean) {
         }
     }
 
-    val boardSize = 330.dp
-    val cellColor = Color(0xFF0F1A30)
-    val borderColor = Color(0xFF22304A)
-
     if (state.showDifficultyDialog) {
         DifficultyDialog(
-            onSelect = { difficulty ->
-                viewModel.onDifficultySelected(difficulty)
-            }
+            onSelect = viewModel::onDifficultySelected
         )
     }
-
 
     if (state.showFirstMoveDialog) {
         FirstMoveDialog(
             isSinglePlayer = state.isSinglePlayer,
-            onResult = { isMeFirst ->
-                viewModel.selectFirstPlayer(isMeFirst)
-            }
+            onResult = viewModel::selectFirstPlayer
         )
     }
-
 
     if (state.gameOver) {
         WinDialog(
             isWinner = state.winner == state.myMark,
             isDraw = state.winner == null,
-            onPlayAgain = {
-                viewModel.resetGame()
-            }
+            onPlayAgain = viewModel::resetGame
         )
     }
 
@@ -80,128 +68,45 @@ fun GameBoardScreen(isSinglePlayer: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        ConnectionBadge(state.connectionState)
+        Text(
+            text = state.statusText,
+            color = Color.White,
+            fontSize = 20.sp
+        )
 
-        // ---------------- HEADER CARD ----------------
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF0E1B3D)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        Column {
+            for (row in 0..2) {
+                Row {
+                    for (col in 0..2) {
+                        val pos = row * 3 + col
+                        val value = state.board[pos]
 
-                Text(
-                    text = if (state.connectionState == ConnectionState.Connected) {
-                        if (state.isMyTurn) "Your Turn" else "Opponent's Turn"
-                    } else {
-                        state.statusText
-                    },
-                    fontSize = 22.sp,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = "You are: ${state.myMark}",
-                    fontSize = 16.sp,
-                    color = Color.LightGray
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ---------------- BOARD ----------------
-
-        Box(
-            modifier = Modifier
-                .size(boardSize)
-                .shadow(12.dp, RoundedCornerShape(20.dp))
-                .background(Color(0xFF081220), RoundedCornerShape(20.dp))
-                .padding(12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Column {
-                for (row in 0..2) {
-                    Row {
-                        for (col in 0..2) {
-
-                            val pos = row * 3 + col
-                            val value = state.board[pos]
-
-                            val isWinningCell = state.winningLine?.contains(pos) == true
-
-                            val scale by animateFloatAsState(
-                                targetValue = if (isWinningCell) 1.1f else 1f,
-                                label = ""
+                        Box(
+                            modifier = Modifier
+                                .size(90.dp)
+                                .padding(6.dp)
+                                .background(Color(0xFF0F1A30), RoundedCornerShape(12.dp))
+                                .clickable(
+                                    enabled = !state.gameOver &&
+                                            state.isMyTurn &&
+                                            value.isEmpty()
+                                ) {
+                                    viewModel.makeMove(pos)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = value,
+                                fontSize = 36.sp,
+                                color = Color.White
                             )
-
-                            Box(
-                                modifier = Modifier
-                                    .size(96.dp)
-                                    .padding(6.dp)
-                                    .background(
-                                        if (isWinningCell)
-                                            Color(0xFF1B5E20)
-                                        else
-                                            cellColor,
-                                        RoundedCornerShape(16.dp)
-                                    )
-                                    .border(2.dp, borderColor, RoundedCornerShape(16.dp))
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = LocalIndication.current,
-                                        enabled =
-                                            !state.gameOver &&
-                                                    state.isMyTurn &&
-                                                    value.isEmpty() &&
-                                                    (
-                                                            state.isSinglePlayer ||
-                                                                    state.connectionState == ConnectionState.Connected
-                                                            ),
-                                        onClick = {
-                                            viewModel.makeMove(pos)
-                                        }
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-
-                                AnimatedContent(
-                                    targetState = value,
-                                    label = ""
-                                ) { target ->
-                                    Text(
-                                        text = target,
-                                        fontSize = 42.sp,
-                                        color = when (target) {
-                                            "X" -> Color(0xFF3FA7FF)
-                                            "O" -> Color(0xFFFF6DD0)
-                                            else -> Color.Transparent
-                                        }
-                                    )
-                                }
-                            }
                         }
                     }
                 }
             }
-
-            if (state.winningLine != null) {
-                WinLineOverlay(state.winningLine!!)
-            }
         }
-
-        Spacer(modifier = Modifier.height(28.dp))
     }
 }
 
